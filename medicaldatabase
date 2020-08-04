@@ -1,0 +1,34 @@
+#Purpose: To search a medication list and produce a report as requested by the user
+while echo -n "Enter Medication Code? "              #prompts the user to enter a mediacation code
+      read -r MedicationCode
+      [ "$MedicationCode" != 'ZZZ' ]                 #checks to see if the medication code is ZZZ. If it is ZZZ, then the program terminates
+do
+   cut -c5-12 medslist > tempfile                    #cuts the medslist file so only the medication code is put into a temporary file
+   [ "$MedicationCode" = tempfile ]                  #checks if the entered medication code is in the temporary file
+   grep -q "$MedicationCode" tempfile                #looks for entered medication code in the temporary file
+   rm tempfile                                       #removes the temporary file for cleaup
+
+   while echo -n "See Generic Name (G/g) or Dose (D/d)? "           #prompts the user to enter either G,g,D or d
+         read -r NameDose
+         [ "$NameDose" != 'G' ] && [ "$NameDose" != 'g' ] && [ "$NameDose" != 'D' ] && [ "$NameDose" != 'd' ]           #checks if the user has entered G,g,D or d
+   do
+         echo please enter only G or D
+   done
+        while read -r wholeline                               #reads each line in the medslist file
+        do
+          if grep -q [Dd] <<< "$NameDose"                     #searches for D or d in the entered variable NameDose
+          then
+              if [[ ${wholeline:4:8} =~ $MedicationCode ]]    #checks to see if there's a match to the entered medication code and the medication code in the medslist file
+              then
+              echo -ne "${wholeline:4:8}${wholeline:12:13}\r\n"       #prints the entered medication code and the dose
+              fi
+          elif grep -q [Gg] <<< $NameDose                           #searches for G or g in the entered variable NameDose
+          then
+              if [[ ${wholeline:4:8} =~ $MedicationCode ]]         #checks to see if there's a match to the entered medication code and the medication code in the medslist file
+              then
+                  echo -ne "${wholeline:4:8}${wholeline:25:14}\r\n"        #prints the entered medication code and the generic name
+              fi
+         fi
+       done < medslist         #terminates and takes  the information from the medslist file
+done
+echo Good bye.                 #program terminates
